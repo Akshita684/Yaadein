@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Yaadein</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tiro+Devanagari+Hindi&family=Pinyon+Script&display=swap" rel="stylesheet">
+<style>
+  :root{ --paper:#ffffff; --ink:#1c1915; --dim:.2; --soft:rgba(22,21,20,.5); }
+  html,body{margin:0;height:100%;background:var(--paper);color:var(--ink);overflow:hidden;-webkit-tap-highlight-color:transparent;
+    font-family:'Tiro Devanagari Hindi',serif}
+  #kadam,#yaad,#sansar,#phool{display:block;position:fixed;inset:0;width:100vw;height:100vh;touch-action:manipulation;outline:none;transition:opacity .8s ease}
+  .off{opacity:0 !important;pointer-events:none !important;visibility:hidden}
+
+  /* ── landing ── */
+  #landing{position:fixed;inset:0;overflow-y:auto;overflow-x:hidden;transition:opacity .8s ease;scroll-behavior:smooth;scroll-snap-type:y mandatory}
+  .hero,.poems{scroll-snap-align:start;scroll-snap-stop:always}
+  .home{position:fixed;top:18px;right:20px;z-index:6;display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;
+    color:rgba(22,21,20,.38);transition:color .3s,background .3s,opacity .6s}
+  .home:hover,.home:focus-visible{color:var(--ink);background:rgba(22,21,20,.05);outline:none}
+  .hero{position:relative;height:100vh;min-height:520px}
+  #door{position:absolute;inset:0;width:100%;height:100%;display:block}
+  .hero-text{position:absolute;right:clamp(22px,6vw,110px);top:clamp(26px,9vh,110px);text-align:right;pointer-events:none}
+  .brand{margin:0;font-family:'Pinyon Script',cursive;font-weight:400;font-size:clamp(3.6rem,13vw,11rem);line-height:1;color:var(--paper);
+    text-shadow:0 0 14px rgba(28,25,21,.9),0 0 30px rgba(28,25,21,.7)}
+  .cue{position:absolute;left:50%;bottom:28px;transform:translateX(-50%);margin:0;font-size:14px;color:var(--soft);text-decoration:none;
+    display:flex;flex-direction:column;align-items:center;gap:10px;animation:cue 2.6s ease-in-out infinite}
+  .cue::after{content:"";width:1px;height:34px;background:currentColor;opacity:.6}
+  @keyframes cue{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,6px)}}
+  #landing{background:#000}
+  .hero{background:#fff}
+  #veil{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;z-index:2}
+  .hero-text{z-index:1}
+  .poems{background:#000;color:#fff;margin:0 auto;min-height:100vh;padding:clamp(56px,10vh,110px) clamp(20px,5vw,48px) 80px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center}
+  .land-label{margin:0 0 26px;font-size:13px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.55);max-width:72rem;width:100%;align-self:center}
+  .cards{display:flex;gap:22px;overflow-x:auto;scroll-snap-type:x mandatory;padding:8px max(4px,calc((100% - 72rem)/2)) 26px;
+    scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.3) transparent;-webkit-overflow-scrolling:touch}
+  .cards .card{flex:0 0 clamp(170px,22vw,230px);scroll-snap-align:start}
+  .card{display:flex;flex-direction:column;color:var(--ink);text-decoration:none;background:#fff;border:1px solid rgba(255,255,255,.2);border-radius:12px;overflow:hidden;
+    transition:transform .5s cubic-bezier(.2,.7,.2,1),box-shadow .5s,border-color .4s}
+  .card:hover,.card:focus-visible{transform:translateY(-6px);box-shadow:0 18px 40px -18px rgba(255,255,255,.25);border-color:#fff;outline:none}
+  .thumb{display:block;width:100%;aspect-ratio:4/5;background:#fff}
+  .meta{padding:12px 14px 14px;border-top:1px solid rgba(22,21,20,.08)}
+  .meta .n{font-size:13px;color:var(--soft)}
+  .meta h3{margin:4px 0 2px;font-weight:400;font-size:1.2rem;line-height:1.25}
+  .meta p{margin:0;font-size:.92rem;line-height:1.5;color:#5b5650}
+
+  /* ── top bar on the picture pages ── */
+  .bar{display:none !important;position:fixed;top:24px;left:28px;right:28px;display:flex;justify-content:space-between;align-items:baseline;pointer-events:none;z-index:4;transition:opacity .6s}
+  .bar h1{margin:0;font-weight:400;font-size:22px;line-height:1.1}
+  .bar a{pointer-events:auto;color:var(--soft);text-decoration:none;font-size:16px;border-bottom:1px solid transparent;transition:color .3s,border-color .3s}
+  .bar a:hover{color:var(--ink);border-color:var(--ink)}
+  body.reading .bar{opacity:0}
+  @media (max-width:640px){ .bar{top:20px;left:20px;right:20px} .bar h1{font-size:20px} }
+
+  /* ── reading panel: words brighten as they reach the reading line ── */
+  .swb-root{position:fixed;inset:0;z-index:3;display:flex;align-items:center;background:var(--paper);color:var(--ink);
+    padding:48px 20px;box-sizing:border-box;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .6s ease}
+  .swb-root.measure{visibility:visible}
+  .swb-root.shown{opacity:1;pointer-events:auto}
+  .swb-root.quick{transition:opacity .25s ease}
+  .swb-grid{width:100%;max-width:64rem;margin:0 auto;display:grid;gap:28px}
+  @media (min-width:768px){ .swb-grid{grid-template-columns:220px 1fr;gap:40px} .swb-root{padding:60px 40px} }
+  .swb-title{margin:0;font-weight:400;font-size:1.65rem;line-height:1.35}
+  .swb-hint{margin:12px 0 0;font-size:.95rem;line-height:1.7;color:#5b5650}
+  .swb-actions{display:flex;flex-wrap:wrap;align-items:center;gap:14px 18px;margin-top:20px}
+  .swb-btn{min-height:44px;display:inline-flex;align-items:center;padding:0 20px;border-radius:6px;border:0;cursor:pointer;
+    background:var(--ink);color:var(--paper);font:inherit;font-size:.95rem;text-decoration:none}
+  .swb-link{color:var(--soft);text-decoration:none;font-size:.95rem;border-bottom:1px solid rgba(22,21,20,.25)}
+  .swb-link:hover{color:var(--ink)}
+  .swb-btn:focus-visible,.swb-box:focus-visible,.swb-link:focus-visible{outline:2px solid var(--ink);outline-offset:4px}
+  .swb-box{cursor:pointer;height:min(62vh,520px);overflow-y:auto;scrollbar-width:thin;scrollbar-color:#cfc9bf transparent;position:relative;
+    -webkit-mask-image:linear-gradient(transparent,#000 14%,#000 80%,transparent);mask-image:linear-gradient(transparent,#000 14%,#000 80%,transparent)}
+  @media (max-width:767px){ .swb-box{height:min(58vh,520px)} }
+  .swb-text{margin:0;padding:120px 0 260px}
+  .swb-text.typed{font-size:clamp(1.45rem,3.4vw,2.1rem);line-height:1.75}
+  .swb-text.typed .ln{display:block}
+  .swb-text.hand{position:relative;padding:0}
+  .swb-text.hand svg{position:absolute;overflow:visible;color:var(--ink)}
+  .swb-w{opacity:var(--dim)}
+  @supports (animation-timeline: view()){
+    .swb-w{animation:swb-lit linear both;animation-timeline:view();animation-range:cover 18% cover 48%}
+  }
+  @keyframes swb-lit{from{opacity:var(--dim)}to{opacity:1}}
+  .swb-box[data-fallback] .swb-w{animation:none;transition:opacity .6s ease}
+  .swb-box[data-fallback] .swb-w.swb-lit{opacity:1}
+  @media (prefers-reduced-motion:reduce){ .swb-w,.swb-box[data-fallback] .swb-w{animation:none;opacity:1;transition:none} }
+  /* paper: warm stock, fine grain and soft mottling over everything */
+  .grain{position:fixed;inset:0;pointer-events:none;z-index:20;mix-blend-mode:multiply;opacity:.4;
+    background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27240%27%20height%3D%27240%27%3E%3Cfilter%20id%3D%27n%27%3E%3CfeTurbulence%20type%3D%27fractalNoise%27%20baseFrequency%3D%27.85%27%20numOctaves%3D%273%27%20stitchTiles%3D%27stitch%27/%3E%3CfeColorMatrix%20values%3D%270%200%200%200%20.42%20%200%200%200%200%20.34%20%200%200%200%200%20.22%20%20.9%200%200%200%20-.4%27/%3E%3C/filter%3E%3Crect%20width%3D%27100%25%27%20height%3D%27100%25%27%20filter%3D%27url%28%23n%29%27/%3E%3C/svg%3E"),url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27700%27%20height%3D%27700%27%3E%3Cfilter%20id%3D%27m%27%3E%3CfeTurbulence%20type%3D%27fractalNoise%27%20baseFrequency%3D%27.006%20.012%27%20numOctaves%3D%272%27%20seed%3D%274%27%20stitchTiles%3D%27stitch%27/%3E%3CfeColorMatrix%20values%3D%270%200%200%200%20.55%20%200%200%200%200%20.45%20%200%200%200%200%20.3%20%20.45%200%200%200%20-.18%27/%3E%3C/filter%3E%3Crect%20width%3D%27100%25%27%20height%3D%27100%25%27%20filter%3D%27url%28%23m%29%27/%3E%3C/svg%3E");background-size:240px 240px,700px 700px}
+</style>
+</head>
+<body>
+<main id="landing">
+  <section class="hero">
+    <canvas id="door" aria-hidden="true"></canvas>
+    <canvas id="veil" aria-hidden="true"></canvas>
+    <h1 class="brand" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Yaadein</h1>
+  </section>
+  <section class="poems" id="poems">
+    <p class="land-label">Poems</p>
+    <div class="cards">
+      <a class="card" href="#kadam"><canvas class="thumb" data-k="kadam" aria-hidden="true"></canvas>
+        <div class="meta"><span class="n">०१</span><h3 lang="hi">कदम का पेड़</h3></div></a>
+      <a class="card" href="#yaadein"><canvas class="thumb" data-k="yaadein" aria-hidden="true"></canvas>
+        <div class="meta"><span class="n">०२</span><h3 lang="hi">यादों के झरोखे से</h3></div></a>
+      <a class="card" href="#sansar"><canvas class="thumb" data-k="sansar" aria-hidden="true"></canvas>
+        <div class="meta"><span class="n">०३</span><h3 lang="hi">यह सुंदर संसार</h3></div></a>
+      <a class="card" href="#phool"><canvas class="thumb" data-k="phool" aria-hidden="true"></canvas>
+        <div class="meta"><span class="n">०४</span><h3 lang="hi">मिट्टी में एक पौधा</h3></div></a>
+    </div>
+  </section>
+</main>
+
+<canvas id="kadam" class="off" tabindex="0" aria-label="A kadam tree made of the poem's letters. Click the tree to read the poem."></canvas>
+<canvas id="yaad" class="off" tabindex="0" aria-label="A bird made of the handwritten poem's words. Click the bird to read the poem."></canvas>
+
+<canvas id="phool" class="off" tabindex="0" aria-label="A flower made of the handwritten poem, with a halftone stem and a butterfly. Click the flower to read the poem."></canvas>
+<canvas id="sansar" class="off" tabindex="0" aria-label="A tree whose crown is made of the handwritten poem and whose trunk is drawn in bitmap, ASCII and halftone ink. Click the tree to read the poem."></canvas>
+
+<header class="bar off" id="bar" hidden><h1 id="title" lang="hi"></h1></header>
+<a href="#kavitayen" class="home off" id="home" aria-label="Back to all poems" title="All poems">
+  <svg viewBox="0 0 28 28" width="28" height="28" aria-hidden="true"><path d="M23 14H6M12 7.5 5.5 14l6.5 6.5" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</a>
+
+<section class="swb-root" id="reader">
+  <div class="swb-grid">
+    <div>
+      <h2 class="swb-title" id="rTitle" lang="hi"></h2>
+    </div>
+    <div class="swb-box" tabindex="0" role="region" aria-label="The poem, scrollable. Click or press Enter to return to the animation."><div class="swb-text" id="rText" lang="hi"></div></div>
+  </div>
+</section>
+
+<script>
+window.__scene = "landing";
+window.__YD = __DATA__;
+window.__BIRD = __BIRD__;
+window.__PERCH = __PERCHB__;
+window.__P4 = __P4__;
+window.__F4 = __F4__;
+window.__BF4 = __BF4__;
+window.__TP = __TP__;
+window.__TF = __TF__;
+</script>
+<script>__READER__</script>
+<script>__KADAM__</script>
+<script>__MORPH__</script>
+<script>__LANDING__</script>
+<script>__SCENES__</script>
+</body>
+</html>
